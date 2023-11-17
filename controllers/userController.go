@@ -75,3 +75,14 @@ func LoginUser(c *gin.Context) {
         "token":  token,
     })
 }
+
+
+func GetAllUesrs(c *gin.Context){
+    var users []User
+    if err := db.Find(&users).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
+        return
+    }
+
+    c.JSON(http.StatusOK, users)
+}

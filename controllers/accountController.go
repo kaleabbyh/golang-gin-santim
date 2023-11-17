@@ -120,3 +120,13 @@ func GetAccountByLoggedInUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+
+func GetAllAccounts(c *gin.Context){
+	var accounts []Account
+	if err := db.Find(&accounts).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve accounts"})
+        return
+    }
+
+    c.JSON(http.StatusOK, accounts)
+}

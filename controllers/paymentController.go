@@ -9,7 +9,6 @@ import (
 )
 
 
-
 func CreatePayments(c *gin.Context) {
 	userID := utils.GetUserIdFromToken(c)
 	if userID == 0 {
@@ -53,6 +52,11 @@ func CreatePayments(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"message": "insufficient funds"})
 		return
     }
+	
+	if PayerAccount.UserID!=userID{
+        c.JSON(http.StatusInternalServerError, gin.H{"message": "this account does not belongs to you"})
+		return
+    }
 
 	newPayment.UserID = userID
 	if err := db.Create(&newPayment).Error; err != nil {
@@ -73,6 +77,7 @@ func CreatePayments(c *gin.Context) {
 		UserID:    newPayment.UserID,
 		Type:      "payed",
 		Amount:    newPayment.Amount,
+		TranferedTo:newPayment.ReceiverAccount,
 	}
 
 	if err := db.Create(&payerTransaction).Error; err != nil {
@@ -92,6 +97,7 @@ func CreatePayments(c *gin.Context) {
 		PaymentID: &newPayment.ID,
 		UserID:    ReceiverAccount.UserID,
 		Type:      "recieved",
+		TranferedFrom:newPayment.PayerAccount,
 		Amount:    newPayment.Amount,
 	}
 
@@ -112,7 +118,6 @@ func CreatePayments(c *gin.Context) {
 
 func GetAllPayments(c *gin.Context) {
     var payments []payment
-
     if err := db.Find(&payments).Error; err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payments"})
         return

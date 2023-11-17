@@ -12,5 +12,7 @@ func SetupAccountRoutes(router *gin.Engine) {
 	router.GET("/acount/accounts/:id", controllers.GetAccountByID)
 	router.GET("/acount/useraccounts/:UserID", controllers.GetAccountByUser)
 	router.GET("/acount/loggedinuseraccounts", controllers.GetAccountByLoggedInUser)
+	router.GET("/acount/getallaccounts", controllers.GetAllAccounts)
+	
 	
 }

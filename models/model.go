@@ -35,6 +35,8 @@ type Transaction struct {
 	User     User        `gorm:"foreignKey:UserID"`
 	Type      string  `gorm:"not null"`
 	Amount    float64 `gorm:"not null"`
+	TranferedFrom string  `gorm:"default:null"`
+	TranferedTo   string    `gorm:"default:null"`
 }
 
 type Account struct {

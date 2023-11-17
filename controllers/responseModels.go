@@ -7,6 +7,16 @@ import (
 	"gorm.io/gorm"
 )
 
+var db *gorm.DB
+
+func init() {
+	var err error
+	db, err = config.ConnectDB()
+	if err != nil {
+		log.Fatal("Error connecting to the database:", err)
+	}
+}
+
 //payment controller
 type user struct {
 	gorm.Model
@@ -32,6 +42,8 @@ type transaction struct {
 	UserID    uint    `gorm:"not null"`
 	Type      string  `gorm:"not null"`
 	Amount    float64 `gorm:"not null"`
+	TranferedFrom string  `gorm:"default:null"`
+	TranferedTo string    `gorm:"default:null"`
 }
 type paymentResponse struct {
 	Payment payment `json:"payment"`
@@ -42,15 +54,7 @@ type paymentResponse struct {
 
 
 //account controllers
-var db *gorm.DB
 
-func init() {
-	var err error
-	db, err = config.ConnectDB()
-	if err != nil {
-		log.Fatal("Error connecting to the database:", err)
-	}
-}
 
 type User struct {
 	gorm.Model
