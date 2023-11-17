@@ -1,68 +1,72 @@
 package utils
 
 import (
-	"encoding/base64"
-	"fmt"
+	"errors"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
-func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (string, error) {
-	decodedPrivateKey, err := base64.StdEncoding.DecodeString(privateKey)
-	if err != nil {
-		return "", fmt.Errorf("could not decode key: %w", err)
-	}
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
 
-	if err != nil {
-		return "", fmt.Errorf("create: parse key: %w", err)
-	}
 
-	now := time.Now().UTC()
+func GenerateToken(userID uint) (string, error) {
 
-	claims := make(jwt.MapClaims)
-	claims["sub"] = payload
-	claims["exp"] = now.Add(ttl).Unix()
-	claims["iat"] = now.Unix()
-	claims["nbf"] = now.Unix()
-
-	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
-
-	if err != nil {
-		return "", fmt.Errorf("create: sign token: %w", err)
+	secretKey := []byte("kaleab") 
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 
-	return token, nil
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
-func ValidateToken(token string, publicKey string) (interface{}, error) {
-	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode: %w", err)
-	}
 
-	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
-
-	if err != nil {
-		return "", fmt.Errorf("validate: parse key: %w", err)
-	}
-
-	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
-		}
-		return key, nil
+func ValidateToken(tokenString string) (uint, error) {
+	
+	secretKey := []byte("kaleab") 
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
 	})
 
-	if err != nil {
-		return nil, fmt.Errorf("validate: %w", err)
+	if err != nil || !token.Valid {
+		return 0, errors.New("invalid token")
 	}
 
-	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if !ok || !parsedToken.Valid {
-		return nil, fmt.Errorf("validate: invalid token")
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, errors.New("invalid token claims")
 	}
 
-	return claims["sub"], nil
+	userID, ok := claims["user_id"].(float64)
+	if !ok {
+		return 0, errors.New("invalid user ID in token claims")
+	}
+
+	return uint(userID), nil
+}
+
+
+func GetUserIdFromToken(c *gin.Context) uint {
+    token := c.GetHeader("Authorization")
+	
+    if token == "" {
+        token = c.Query("token")
+    }
+
+    tokenParts := strings.Split(token, " ")
+    if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+        return 0
+    }
+
+    token = tokenParts[1]
+	userID, _ := ValidateToken(token)
+    return userID
 }

@@ -1,40 +1,77 @@
 package controllers
 
 import (
+	// "fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kaleabbyh/golang-santim/models"
-	"gorm.io/gorm"
+	"github.com/kaleabbyh/golang-santim/utils"
 )
 
-type UserController struct {
-    DB *gorm.DB
-}
 
-func (uc *UserController) GetUsers(c *gin.Context) {
-    var users []models.User
-    if err := uc.DB.Find(&users).Error; err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
-        return
-    }
-    c.JSON(http.StatusOK, users)
-}
-
-
-
-func (uc *UserController) CreateUser(c *gin.Context) {
-    // Create a new User instance
+func RegisterUser(c *gin.Context) {
+  
     user := models.User{}
-    if err := c.ShouldBindJSON(&user); err != nil {
+    error := c.ShouldBindJSON(&user)
+    if error != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
         return
     }
 
-    if err := uc.DB.Create(&user).Error; err != nil {
+    encryptedPassword, err := utils.HashPassword(user.Password)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to encrypt password"})
+        return
+    }
+
+    user.Password = encryptedPassword
+
+    if err := db.Create(&user).Error; err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
         return
     }
 
-    c.JSON(http.StatusCreated, user)
+    token, _ := utils.GenerateToken(user.ID)
+
+    c.JSON(http.StatusOK, gin.H{
+        "status": http.StatusOK,
+        "user":   user,
+        "token":  token,
+    })
+}
+
+
+func LoginUser(c *gin.Context) {
+    loginData := struct {
+        Email    string `json:"email"`
+        Password string `json:"password"`
+    }{}
+
+    err := c.ShouldBindJSON(&loginData)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+        return
+    }
+
+    var user models.User
+    result := db.First(&user, "email = ?", strings.ToLower(loginData.Email))
+    if result.Error != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+        return
+    }
+
+    token, _ := utils.GenerateToken(user.ID)
+
+    if err := utils.VerifyPassword(user.Password, loginData.Password); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "status": "success",
+        "user":   user,
+        "token":  token,
+    })
 }
