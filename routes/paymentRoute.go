@@ -11,5 +11,4 @@ func SetupPaymentRoutes(router *gin.Engine) {
     router.GET("/payments/getallpayments",middleware.RoleCheckMiddleware(), controllers.GetAllPayments)
 	router.GET("/payments/getallpaymentsByUser",middleware.IsLoggedIn(), controllers.GetPaymentsByUser)
 	router.GET("/payments/getpaymentById/:PaymentID",middleware.RoleCheckMiddleware(), controllers.GetPaymentsById)
-	
 }

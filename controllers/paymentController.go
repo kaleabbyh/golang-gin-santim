@@ -133,7 +133,6 @@ func GetPaymentsByUser(c *gin.Context) {
 }
 
 func GetPaymentsById(c *gin.Context) {
-	
 	paymentID := c.Param("PaymentID")
 	var payment Payment
 	result := db.First(&payment,"id=?", paymentID)
@@ -149,8 +148,6 @@ func GetPaymentsById(c *gin.Context) {
 }
 
 func GetAllPayments(c *gin.Context) {
-	
-
 	var payments []Payment
 	if err := db.Find(&payments).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payments"})
