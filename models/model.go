@@ -16,6 +16,7 @@ type User struct {
 	Email    	string   	   `gorm:"not null;unique"`
 	Password	string    	   `gorm:"not null"`
 	Role     	string         `gorm:"not null"`
+	// Role 		RoleEnum `gorm:"type:role_enum"`
 	Payments 	[]Payment      `gorm:"foreignKey:UserID"`
 	Account  	[]Account 	   `gorm:"foreignKey:UserID"`
 	Transaction []Account      `gorm:"foreignKey:UserID"`
@@ -74,3 +75,17 @@ type Demo struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	Demoname  string         `gorm:"default:null"`
 }
+
+
+type Student struct {
+    gorm.Model
+    Name string
+    Role RoleEnum `gorm:"type:role_enum"`
+}
+type RoleEnum string
+
+const (
+    user  RoleEnum = "user"
+    admin RoleEnum = "admin"
+	superadmin RoleEnum = "superadmin"
+)

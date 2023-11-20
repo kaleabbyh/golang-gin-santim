@@ -31,7 +31,7 @@ func RegisterUser(c *gin.Context) {
         return
     }
 
-    token, _ := utils.GenerateTokenUpdate(user.ID,user.Role)
+    token, _ := utils.GenerateToken(user.ID,user.Role)
 
     c.JSON(http.StatusOK, gin.H{
         "status": http.StatusOK,
@@ -61,19 +61,12 @@ func LoginUser(c *gin.Context) {
         return
     }
 
-    token, _ := utils.GenerateTokenUpdate(user.ID,user.Role)
+    token, _ := utils.GenerateToken(user.ID,user.Role)
 
     if err := utils.VerifyPassword(user.Password, loginData.Password); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
         return
     }
-
-
-    // newToken,err:=utils.GenerateTokenUpdate(user.ID,user.Role)
-    // fmt.Println(newToken)
-   
-    // userid,role,err:=utils.ValidateTokenUpdate(newToken)
-    // fmt.Println(userid.String()+"  "+role)
 
     c.JSON(http.StatusOK, gin.H{
         "status": "success",
@@ -84,6 +77,16 @@ func LoginUser(c *gin.Context) {
 
 
 func GetAllUesrs(c *gin.Context){
+    _, role, error := utils.GetUserIdFromToken(c)
+
+	if error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	if role != "admin" && role != "superadmin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to search for account"})
+		return
+	}
     var users []User
     if err := db.Find(&users).Error; err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})

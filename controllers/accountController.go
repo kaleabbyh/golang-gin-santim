@@ -11,7 +11,8 @@ import (
 
 // Create Account by if User is LoggedIn
 func CreateAccount(c *gin.Context) {
-	userID, role, error := utils.GetUserIdFromTokenUpdate(c)
+	
+	userID, role, error := utils.GetUserIdFromToken(c)
 
 	if error != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
@@ -52,6 +53,16 @@ func CreateAccount(c *gin.Context) {
 
 // Get Accounts by Acount Id
 func GetAccountByID(c *gin.Context) {
+	_, role, error := utils.GetUserIdFromToken(c)
+
+	if error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	if role != "admin" && role != "superadmin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to search for account"})
+		return
+	}
 	accountID := c.Param("id")
 	var account Account
 	result := db.First(&account, "id = ?", accountID)
@@ -68,11 +79,41 @@ func GetAccountByID(c *gin.Context) {
 		return
 	}
 
-	response := AccountResponse{
-		Account: account,
-		User:    user,
+	c.JSON(http.StatusOK, gin.H{ "Account": account, "User":    user })
+}
+
+
+// Get Accounts by Acount Id
+func GetAccountByAccountNumber(c *gin.Context) {
+	_, role, error := utils.GetUserIdFromToken(c)
+
+	if error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
 	}
-	c.JSON(http.StatusOK, response)
+	if role != "admin" && role != "superadmin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to search for account"})
+		return
+	}
+
+	AccountNumber := c.Query("account_number")
+	var account Account
+	result := db.First(&account, "account_number = ?", AccountNumber)
+	fmt.Println(AccountNumber)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error})
+		return
+	}
+
+	var user User
+	result = db.First(&user,"id=?", account.UserID)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+
+	c.JSON(http.StatusOK, gin.H{ "Account": account, "User":    user })
 }
 
 // Get Accounts by Acount User Id
@@ -93,16 +134,12 @@ func GetAccountByUser(c *gin.Context) {
 		return
 	}
 
-	response := AccountResponses{
-		Account: accounts,
-		User:    user,
-	}
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, gin.H{ "Account": accounts, "User":    user })
 }
 
 // Get Accounts by Acount LoggedIn User
 func GetAccountByLoggedInUser(c *gin.Context) {
-	UserID, _, error := utils.GetUserIdFromTokenUpdate(c)
+	UserID, _, error := utils.GetUserIdFromToken(c)
 	if error != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
@@ -122,15 +159,12 @@ func GetAccountByLoggedInUser(c *gin.Context) {
 		return
 	}
 
-	response := AccountResponses{
-		Account: accounts,
-		User:    user,
-	}
-	c.JSON(http.StatusOK, response)
+
+	c.JSON(http.StatusOK, gin.H{"Account": accounts,"User":user})
 }
 
 func GetAllAccounts(c *gin.Context) {
-	_, role, error := utils.GetUserIdFromTokenUpdate(c)
+	_, role, error := utils.GetUserIdFromToken(c)
 
 	if error != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})

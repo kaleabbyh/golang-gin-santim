@@ -7,6 +7,4 @@ import (
 
 func SetupTransactionRoutes(router *gin.Engine) {
     router.GET("/transactions/getalltransactions", controllers.GetAllTransactions)
-    
-   
 }

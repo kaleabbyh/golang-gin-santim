@@ -10,8 +10,9 @@ import (
 	"gorm.io/gorm"
 )
 
+
 func CreatePayments(c *gin.Context) {
-	userID,error := utils.GetUserIdFromToken(c)
+	userID,_,error := utils.GetUserIdFromToken(c)
 	if error!=nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
@@ -115,8 +116,9 @@ func CreatePayments(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
+
 func GetPaymentsByUser(c *gin.Context) {
-	userID,error := utils.GetUserIdFromToken(c)
+	userID,_,error := utils.GetUserIdFromToken(c)
 	if error!=nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
@@ -128,14 +130,23 @@ func GetPaymentsByUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, payments)
-
 }
 
 func GetPaymentsById(c *gin.Context) {
-	paymentID := c.Param("PaymentID")
+	_, role, error := utils.GetUserIdFromToken(c)
 
+	if error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	if role != "admin" && role != "superadmin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to search for account"})
+		return
+	}
+	
+	paymentID := c.Param("PaymentID")
 	var payment Payment
-	result := db.First(&payment, paymentID)
+	result := db.First(&payment,"id=?", paymentID)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Payment not found"})
@@ -148,6 +159,17 @@ func GetPaymentsById(c *gin.Context) {
 }
 
 func GetAllPayments(c *gin.Context) {
+	_, role, error := utils.GetUserIdFromToken(c)
+
+	if error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	if role != "admin" && role != "superadmin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to get payments"})
+		return
+	}
+
 	var payments []Payment
 	if err := db.Find(&payments).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve payments"})

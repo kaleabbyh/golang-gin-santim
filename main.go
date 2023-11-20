@@ -12,11 +12,11 @@ func main() {
 	
     router := gin.Default()
 
-    routes.SetupPaymentRoutes(router)
+    
     routes.SetupUserRoutes(router)
     routes.SetupAccountRoutes(router)
+    routes.SetupPaymentRoutes(router)
     routes.SetupTransactionRoutes(router)
-
     routes.SetupDemoRoutes(router)
     
     
