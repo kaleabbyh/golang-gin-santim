@@ -6,15 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kaleabbyh/golang-santim/models"
-	"github.com/kaleabbyh/golang-santim/utils"
 	"gorm.io/gorm"
 )
 
 
 func CreatePayments(c *gin.Context) {
-	userID,_,error := utils.GetUserIdFromToken(c)
-	if error!=nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve userID"})
 		return
 	}
 
@@ -118,11 +117,12 @@ func CreatePayments(c *gin.Context) {
 
 
 func GetPaymentsByUser(c *gin.Context) {
-	userID,_,error := utils.GetUserIdFromToken(c)
-	if error!=nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve userID"})
 		return
 	}
+
 	var payments []Payment
 	err := db.Where("user_id = ?", userID).Find(&payments)
 	if err != nil {
@@ -133,16 +133,6 @@ func GetPaymentsByUser(c *gin.Context) {
 }
 
 func GetPaymentsById(c *gin.Context) {
-	_, role, error := utils.GetUserIdFromToken(c)
-
-	if error != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
-	if role != "admin" && role != "superadmin" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to search for account"})
-		return
-	}
 	
 	paymentID := c.Param("PaymentID")
 	var payment Payment
@@ -159,16 +149,7 @@ func GetPaymentsById(c *gin.Context) {
 }
 
 func GetAllPayments(c *gin.Context) {
-	_, role, error := utils.GetUserIdFromToken(c)
-
-	if error != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
-	if role != "admin" && role != "superadmin" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to get payments"})
-		return
-	}
+	
 
 	var payments []Payment
 	if err := db.Find(&payments).Error; err != nil {

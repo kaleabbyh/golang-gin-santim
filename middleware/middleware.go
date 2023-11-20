@@ -9,7 +9,7 @@ import (
 )
 func RoleCheckMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID, role, err := utils.GetUserIdFromToken(c)
+		userID, role, err := utils.GetValuesFromToken(c)
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
@@ -17,14 +17,14 @@ func RoleCheckMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if userID == uuid.Nil || role == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "UserID or role missing"})
+		if userID == uuid.Nil  {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no user is logged in"})
 			c.Abort()
 			return
 		}
 
 		if role != "admin" && role != "superadmin" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to see user accounts"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized"})
 			c.Abort()
 			return
 		}
@@ -38,7 +38,7 @@ func RoleCheckMiddleware() gin.HandlerFunc {
 
 func IsLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID, role, err := utils.GetUserIdFromToken(c)
+		userID, role, err := utils.GetValuesFromToken(c)
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
@@ -54,6 +54,7 @@ func IsLoggedIn() gin.HandlerFunc {
 
 		c.Set("userID", userID)
 		c.Set("role", role)
+
 		c.Next()
 	}
 }

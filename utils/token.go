@@ -63,7 +63,7 @@ func ValidateToken(tokenString string) (uuid.UUID,string, error) {
 }
 
 
-func GetUserIdFromToken(c *gin.Context) (uuid.UUID,string, error) {
+func GetValuesFromToken(c *gin.Context) (uuid.UUID,string, error) {
 	token := c.GetHeader("Authorization")
 
 	if token == "" {

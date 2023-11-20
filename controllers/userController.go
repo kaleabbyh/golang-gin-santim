@@ -77,16 +77,7 @@ func LoginUser(c *gin.Context) {
 
 
 func GetAllUesrs(c *gin.Context){
-    _, role, error := utils.GetUserIdFromToken(c)
-
-	if error != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
-	if role != "admin" && role != "superadmin" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "not authorized to search for account"})
-		return
-	}
+   
     var users []User
     if err := db.Find(&users).Error; err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
