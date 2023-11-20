@@ -11,8 +11,8 @@ import (
 )
 
 func CreatePayments(c *gin.Context) {
-	userID := utils.GetUserIdFromToken(c)
-	if userID == 0 {
+	userID,error := utils.GetUserIdFromToken(c)
+	if error!=nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
@@ -74,7 +74,7 @@ func CreatePayments(c *gin.Context) {
 	}
 
 	payerTransaction := Transaction{
-		PaymentID:   &newPayment.ID,
+		PaymentID:   newPayment.ID,
 		UserID:      newPayment.UserID,
 		Type:        "payed",
 		Amount:      newPayment.Amount,
@@ -95,7 +95,7 @@ func CreatePayments(c *gin.Context) {
 	}
 
 	recieverTransaction := Transaction{
-		PaymentID:     &newPayment.ID,
+		PaymentID:     newPayment.ID,
 		UserID:        ReceiverAccount.UserID,
 		Type:          "recieved",
 		TranferedFrom: newPayment.PayerAccount,
@@ -116,8 +116,8 @@ func CreatePayments(c *gin.Context) {
 }
 
 func GetPaymentsByUser(c *gin.Context) {
-	userID := utils.GetUserIdFromToken(c)
-	if userID == 0 {
+	userID,error := utils.GetUserIdFromToken(c)
+	if error!=nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}

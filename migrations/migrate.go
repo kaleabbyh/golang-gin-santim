@@ -14,7 +14,7 @@ func MigrateTables(db *gorm.DB) error {
 						  models.Payment{},
 		   				  models.Transaction{},
 		  				  models.Account{},
-						  models.Demo1{},
+						  models.Demo{},
 						)
     if err != nil {
 		log.Fatal("Error migrating tables:", err)

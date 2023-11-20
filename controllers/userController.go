@@ -1,19 +1,17 @@
 package controllers
 
 import (
-	// "fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kaleabbyh/golang-santim/models"
 	"github.com/kaleabbyh/golang-santim/utils"
 )
 
 
 func RegisterUser(c *gin.Context) {
   
-    user := models.User{}
+    var user User
     error := c.ShouldBindJSON(&user)
     if error != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
@@ -33,7 +31,7 @@ func RegisterUser(c *gin.Context) {
         return
     }
 
-    token, _ := utils.GenerateToken(user.ID)
+    token, _ := utils.GenerateTokenUpdate(user.ID,user.Role)
 
     c.JSON(http.StatusOK, gin.H{
         "status": http.StatusOK,
@@ -44,6 +42,7 @@ func RegisterUser(c *gin.Context) {
 
 
 func LoginUser(c *gin.Context) {
+    
     loginData := struct {
         Email    string `json:"email"`
         Password string `json:"password"`
@@ -55,19 +54,26 @@ func LoginUser(c *gin.Context) {
         return
     }
 
-    var user models.User
+    var user User
     result := db.First(&user, "email = ?", strings.ToLower(loginData.Email))
     if result.Error != nil {
         c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
         return
     }
 
-    token, _ := utils.GenerateToken(user.ID)
+    token, _ := utils.GenerateTokenUpdate(user.ID,user.Role)
 
     if err := utils.VerifyPassword(user.Password, loginData.Password); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
         return
     }
+
+
+    // newToken,err:=utils.GenerateTokenUpdate(user.ID,user.Role)
+    // fmt.Println(newToken)
+   
+    // userid,role,err:=utils.ValidateTokenUpdate(newToken)
+    // fmt.Println(userid.String()+"  "+role)
 
     c.JSON(http.StatusOK, gin.H{
         "status": "success",

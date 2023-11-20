@@ -10,13 +10,15 @@ import (
 
 func main() {
 	
-
     router := gin.Default()
 
     routes.SetupPaymentRoutes(router)
     routes.SetupUserRoutes(router)
     routes.SetupAccountRoutes(router)
     routes.SetupTransactionRoutes(router)
+
+    routes.SetupDemoRoutes(router)
+    
     
 
     fmt.Println("Server is running on port 8080")
