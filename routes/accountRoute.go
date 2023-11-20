@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kaleabbyh/golang-santim/controllers"
 	"github.com/kaleabbyh/golang-santim/middleware"
-	// "gorm.io/gorm"
 )
 
 func SetupAccountRoutes(router *gin.Engine) {

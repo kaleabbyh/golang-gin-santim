@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	//"fmt"
 	"fmt"
 	"net/http"
 
@@ -73,7 +72,6 @@ func GetAccountByID(c *gin.Context) {
 
 // Get Accounts by Acount Id
 func GetAccountByAccountNumber(c *gin.Context) {
-	
 	AccountNumber := c.Query("account_number")
 	var account Account
 	result := db.First(&account, "account_number = ?", AccountNumber)
@@ -145,13 +143,11 @@ func GetAccountByLoggedInUser(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(http.StatusOK, gin.H{"Account": accounts,"User":user})
 }
 
 
 func GetAllAccounts(c *gin.Context) {
-
 	var accounts []Account
 	if err := db.Find(&accounts).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve accounts"})

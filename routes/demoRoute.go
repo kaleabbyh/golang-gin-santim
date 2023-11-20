@@ -7,5 +7,4 @@ import (
 
 func SetupDemoRoutes(router *gin.Engine) {
 	router.POST("/createdemodata", controllers.CreateDemo)
-	
 }
