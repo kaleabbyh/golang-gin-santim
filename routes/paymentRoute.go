@@ -11,5 +11,4 @@ func SetupPaymentRoutes(router *gin.Engine) {
 	router.GET("/payments/getallpaymentsByUser", controllers.GetPaymentsByUser)
 	router.GET("/payments/getpaymentById/:PaymentID", controllers.GetPaymentsById)
 	
-	
 }

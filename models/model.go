@@ -8,18 +8,18 @@ import (
 )
 
 type User struct {
-	ID       	uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	CreatedAt	time.Time
-	UpdatedAt 	time.Time
-	DeletedAt 	gorm.DeletedAt `gorm:"index"`
-	Name    	string   	   `gorm:"not null"`
-	Email    	string   	   `gorm:"not null;unique"`
-	Password	string    	   `gorm:"not null"`
-	Role     	string         `gorm:"not null"`
+	ID       		uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	CreatedAt		time.Time
+	UpdatedAt 		time.Time
+	DeletedAt 		gorm.DeletedAt `gorm:"index"`
+	Name    		string   	   `gorm:"not null"`
+	Email    		string   	   `gorm:"not null;unique"`
+	Password		string    	   `gorm:"not null"`
+	Role     		string         `gorm:"not null"`
 	// Role 		RoleEnum `gorm:"type:role_enum"`
-	Payments 	[]Payment      `gorm:"foreignKey:UserID"`
-	Account  	[]Account 	   `gorm:"foreignKey:UserID"`
-	Transaction []Account      `gorm:"foreignKey:UserID"`
+	Payments 		[]Payment      `gorm:"foreignKey:UserID"`
+	Account  		[]Account 	   `gorm:"foreignKey:UserID"`
+	Transaction 	[]Account      `gorm:"foreignKey:UserID"`
 }
 
 type Payment struct {
@@ -39,7 +39,7 @@ type Payment struct {
 }
 
 type Transaction struct {
-	ID       		uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	ID       		uuid.UUID       `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	CreatedAt 		time.Time
 	UpdatedAt 		time.Time
 	DeletedAt 		gorm.DeletedAt 	`gorm:"index"`
@@ -62,28 +62,22 @@ type Account struct {
 	User            User   		   `gorm:"foreignKey:UserID"`
 	AccountNumber   string   	   `gorm:"not null;unique"`
 	Balance         float64 	   `gorm:"not null"`
-	CreatedBy    	uuid.UUID     `gorm:"type:uuid;not null"`
-	CreatedByUser   User          `gorm:"foreignKey:CreatedBy"`
+	CreatedBy    	uuid.UUID      `gorm:"type:uuid;not null"`
+	CreatedByUser   User           `gorm:"foreignKey:CreatedBy"`
 	
 }
 
 
 type Demo struct {
-	ID        uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	Demoname  string         `gorm:"default:null"`
+	ID        		uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	CreatedAt 		time.Time
+	UpdatedAt 		time.Time
+	DeletedAt 		gorm.DeletedAt `gorm:"index"`
+	Demoname  		string         `gorm:"default:null"`
 }
 
 
-type Student struct {
-    gorm.Model
-    Name string
-    Role RoleEnum `gorm:"type:role_enum"`
-}
 type RoleEnum string
-
 const (
     user  RoleEnum = "user"
     admin RoleEnum = "admin"

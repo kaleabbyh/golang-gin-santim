@@ -28,7 +28,7 @@ func CreatePayments(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "self transfer is not allowed"})
 		return
 	}
-
+ 
 	var loggedInUser User
 	result := db.First(&loggedInUser, userID)
 	if result.Error != nil {
